@@ -185,6 +185,7 @@ Qudo::Parallel::Manager - auto control forking manager process.
       min_spare_workers      => 1,
       max_spare_workers      => 5,
       max_request_par_child  => 30,
+      min_request_par_child  => 0,
       auto_load_worker       => 1,
       admin                  => 1,
       debug                  => 1,
