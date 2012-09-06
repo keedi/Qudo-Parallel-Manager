@@ -13,6 +13,7 @@ sub new {
     my ($class, %args) = @_;
 
     my $max_request_par_child = delete $args{max_request_par_child} || 30;
+    my $min_request_par_child = delete $args{min_request_par_child} || 0;
     my $max_workers           = delete $args{max_workers}           || 1;
     my $min_spare_workers     = delete $args{min_spare_workers}     || 1;
     my $max_spare_workers     = delete $args{max_spare_workers}     || $max_workers;
@@ -30,6 +31,7 @@ sub new {
     my $self = bless {
         max_workers           => $max_workers,
         max_request_par_child => $max_request_par_child,
+        min_request_par_child => $min_request_par_child,
         min_spare_workers     => $min_spare_workers,
         max_spare_workers     => $max_spare_workers,
         work_delay            => $work_delay,
@@ -75,7 +77,16 @@ sub run {
                 $db->reconnect;
             }
 
-            my $reqs_before_exit = $self->{max_request_par_child};
+            my $reqs_before_exit = do {
+                my $max = $self->{max_request_par_child};
+                if (my $min = $self->{min_request_par_child}) {
+                    srand((rand() * 2 ** 30) ^ $$ ^ time);
+                    $max -= int(($max - $min + 1) * rand);
+                } else {
+                    $max;
+                }
+                $max;
+            };
 
             local $SIG{TERM} = sub { $reqs_before_exit = 0 };
 
