@@ -82,8 +82,6 @@ sub run {
                 if (my $min = $self->{min_request_par_child}) {
                     srand((rand() * 2 ** 30) ^ $$ ^ time);
                     $max -= int(($max - $min + 1) * rand);
-                } else {
-                    $max;
                 }
                 $max;
             };
